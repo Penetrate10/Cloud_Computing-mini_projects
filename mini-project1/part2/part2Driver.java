@@ -1,0 +1,46 @@
+package project1.part2;
+
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+import java.io.IOException;
+
+public class part2Driver {
+    public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
+        // 1.获取job
+        Configuration conf = new Configuration();
+        conf.set("ngram", args[2]);
+        Job job = Job.getInstance(conf);
+
+        // 2.设置jar包路径
+        job.setJarByClass(part2Driver.class);  // 通过类名，反射获取jar包位置
+
+        // 3.关联Mapper和Reducer
+        job.setMapperClass(part2Mapper.class);
+        job.setReducerClass(part2Reducer.class);
+
+        // 4.设置map输出的kv类型
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(IntWritable.class);
+
+        // 5.设置最终输出的kv类型
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        // 6.设置输入路径和输出路径
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        // 7.提交job
+        boolean result = job.waitForCompletion(true);
+
+        System.exit(result ? 0 : 1);
+    }
+
+}
